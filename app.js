@@ -2,9 +2,14 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
-const app = express()
 const router = require('./router')
 const errorHandler = require('./middleware/error-handler')
+
+// 连接数据库
+require('./model/index')
+
+const app = express()
+const PORT = process.env.port || 3000
 
 // 日志输出
 app.use(morgan('dev'))
@@ -16,8 +21,6 @@ app.use(bodyParser.json())
 
 // 跨域请求
 app.use(cors())
-
-const PORT = process.env.port || 3000
 
 // 挂载路由
 app.use('/api', router)
