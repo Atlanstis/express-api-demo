@@ -10,9 +10,12 @@ exports.login = async (req, res, next) => {
 
 exports.register = async (req, res, next) => {
   try {
-    const user = new User(req.body.user)
+    let user = new User(req.body.user)
     // 保存到数据库
     await user.save()
+    // 删除 password 字段
+    user = user.toJSON()
+    delete user.password
     // 发送成功响应
     res.status(200).json({
       user

@@ -13,12 +13,12 @@ const db = mongoose.connection
 
 // 连接失败时
 db.on('error', (err) => {
-  console.log('MOngoDB 数据库连接失败', err)
+  console.log('MongoDB 数据库连接失败', err)
 })
 
 // 连接成功时
 db.once('open', function () {
-  console.log('MOngoDB 数据库连接成功')
+  console.log('MongoDB 数据库连接成功')
 })
 
 // 组织导出模型类
