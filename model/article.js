@@ -3,10 +3,6 @@ const baseModel = require('./base-model')
 
 const articleSchema = new mongoose.Schema({
   ...baseModel,
-  slug: {
-    type: String,
-    require: true
-  },
   title: {
     type: String,
     require: true
@@ -19,13 +15,19 @@ const articleSchema = new mongoose.Schema({
     type: String,
     require: true
   },
-  tagList: ['dragons', 'training'],
-  favorited: false,
-  favoritesCount: 0,
+  tagList: {
+    type: [String],
+    default: null
+  },
+  favoritesCount: {
+    type: Number,
+    default: 0
+  },
   author: {
-    username: 'jake',
-    bio: 'I work at statefarm',
-    image: 'https://i.stack.imgur.com/xHWG8.jpg',
-    following: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
 })
+
+module.exports = articleSchema

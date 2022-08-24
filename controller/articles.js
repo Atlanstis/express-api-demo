@@ -1,6 +1,38 @@
+const { Article, User } = require('../model')
+
+const articlePopulate = {
+  username: 1,
+  bio: 1,
+  image: 1,
+  _id: 0
+}
+
 exports.listArticles = async (req, res, next) => {
   try {
-    res.send('文章列表')
+    const { limit = 20, offset = 0, tag, author } = req.query
+
+    const filter = {}
+    if (tag) {
+      filter.tagList = tag
+    }
+    if (author) {
+      const user = await User.findOne({ username: author })
+      filter.author = user ? user._id : null
+    }
+
+    const articles = await Article.find(filter)
+      .populate('author', articlePopulate)
+      .skip(Number(offset))
+      .limit(Number(limit))
+      .sort({
+        // -1：倒序，1：正序
+        updateAt: -1
+      })
+    const articlesCount = await Article.countDocuments(filter)
+    res.status(200).json({
+      articles,
+      articlesCount
+    })
   } catch (err) {
     next(err)
   }
@@ -16,7 +48,14 @@ exports.feedArticles = async (req, res, next) => {
 
 exports.getArticle = async (req, res, next) => {
   try {
-    res.send('获取文章详情')
+    const article = await Article.findById(req.params.slug).populate(
+      'author',
+      articlePopulate
+    )
+    if (!article) {
+      return res.status(404).end()
+    }
+    res.status(200).json({ article })
   } catch (err) {
     next(err)
   }
@@ -24,7 +63,10 @@ exports.getArticle = async (req, res, next) => {
 
 exports.createArticle = async (req, res, next) => {
   try {
-    res.send('创建文章')
+    const article = new Article({ ...req.body.article, author: req.user._id })
+    article.populate('author', articlePopulate)
+    await article.save()
+    res.status(200).json({ article })
   } catch (err) {
     next(err)
   }
@@ -32,7 +74,13 @@ exports.createArticle = async (req, res, next) => {
 
 exports.updateArticle = async (req, res, next) => {
   try {
-    res.send('更新文章')
+    const { title, description, body } = req.body.article
+    const { article } = req
+    article.title = title ? title : article.title
+    article.description = description ? description : article.description
+    article.body = body ? body : article.body
+    await article.save()
+    res.status(200).json({ article })
   } catch (err) {
     next(err)
   }
@@ -40,7 +88,9 @@ exports.updateArticle = async (req, res, next) => {
 
 exports.deleteArticle = async (req, res, next) => {
   try {
-    res.send('删除文章')
+    const { article } = req
+    await article.remove()
+    res.status(200).end()
   } catch (err) {
     next(err)
   }
