@@ -38,13 +38,27 @@ router.delete(
 )
 
 // 文章添加评论
-router.post('/:slug/comments', articlesController.addCommentsToArticle)
+router.post(
+  '/:slug/comments',
+  auth,
+  articleValidator.addCommentsToArticle,
+  articlesController.addCommentsToArticle
+)
 
 // 获取文章评论
-router.get('/:slug/comments', articlesController.getCommentsFromArticle)
+router.get(
+  '/:slug/comments',
+  articleValidator.getCommentsFromArticle,
+  articlesController.getCommentsFromArticle
+)
 
 // 删除文章评论
-router.delete('/:slug/comments/:id', articlesController.deleteComment)
+router.delete(
+  '/:slug/comments/:id',
+  auth,
+  articleValidator.deleteComment,
+  articlesController.deleteComment
+)
 
 // 收藏文章
 router.get('/:slug/favorite', articlesController.favoriteArticle)

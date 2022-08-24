@@ -1,6 +1,6 @@
-const { Article, User } = require('../model')
+const { Article, User, Comment } = require('../model')
 
-const articlePopulate = {
+const authorPopulate = {
   username: 1,
   bio: 1,
   image: 1,
@@ -21,7 +21,7 @@ exports.listArticles = async (req, res, next) => {
     }
 
     const articles = await Article.find(filter)
-      .populate('author', articlePopulate)
+      .populate('author', authorPopulate)
       .skip(Number(offset))
       .limit(Number(limit))
       .sort({
@@ -50,7 +50,7 @@ exports.getArticle = async (req, res, next) => {
   try {
     const article = await Article.findById(req.params.slug).populate(
       'author',
-      articlePopulate
+      authorPopulate
     )
     if (!article) {
       return res.status(404).end()
@@ -64,7 +64,7 @@ exports.getArticle = async (req, res, next) => {
 exports.createArticle = async (req, res, next) => {
   try {
     const article = new Article({ ...req.body.article, author: req.user._id })
-    article.populate('author', articlePopulate)
+    article.populate('author', authorPopulate)
     await article.save()
     res.status(200).json({ article })
   } catch (err) {
@@ -98,7 +98,15 @@ exports.deleteArticle = async (req, res, next) => {
 
 exports.addCommentsToArticle = async (req, res, next) => {
   try {
-    res.send('文章添加评论')
+    const { slug } = req.params
+    let comment = new Comment({
+      ...req.body.comment,
+      article: slug,
+      author: req.user._id
+    })
+    comment.populate('author', authorPopulate)
+    await comment.save()
+    res.status(200).json({ comment })
   } catch (err) {
     next(err)
   }
@@ -106,7 +114,11 @@ exports.addCommentsToArticle = async (req, res, next) => {
 
 exports.getCommentsFromArticle = async (req, res, next) => {
   try {
-    res.send('获取文章评论')
+    const { slug } = req.params
+    const comments = await Comment.find({ article: slug })
+      .populate('author', authorPopulate)
+      .sort({ updateAt: -1 })
+    res.status(200).json({ comments })
   } catch (err) {
     next(err)
   }
@@ -114,7 +126,9 @@ exports.getCommentsFromArticle = async (req, res, next) => {
 
 exports.deleteComment = async (req, res, next) => {
   try {
-    res.send('删除文章评论')
+    const { comment } = req
+    await comment.remove()
+    res.status(200).end()
   } catch (err) {
     next(err)
   }

@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const { dbUri, dbUser, dbPass } = require('../config/config.default')
 const userSchema = require('./user')
 const articleSchema = require('./article')
+const commentSchema = require('./comment')
 
 // 连接数据库
 mongoose.connect(dbUri, {
@@ -27,5 +28,6 @@ db.once('open', function () {
 // mongoose 会自动在数据库的集合名末尾增加 s
 module.exports = {
   User: mongoose.model('User', userSchema),
-  Article: mongoose.model('Article', articleSchema)
+  Article: mongoose.model('Article', articleSchema),
+  Comment: mongoose.model('Comment', commentSchema)
 }

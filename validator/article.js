@@ -1,6 +1,6 @@
-const { body, param, query } = require('express-validator')
+const { body, query } = require('express-validator')
 const validate = require('../middleware/validate')
-const { Article } = require('../model')
+const { Article, Comment } = require('../model')
 
 exports.createArticle = validate([
   body('article.title').notEmpty().withMessage('文章标题不能为空'),
@@ -40,3 +40,47 @@ exports.listArticles = validate([
     }
   })
 ])
+
+exports.addCommentsToArticle = [
+  validate([body('comment.body').notEmpty().withMessage('评论内容不能为空')]),
+  validate([validate.isValidObjectId(['params'], 'slug')]),
+  async (req, res, next) => {
+    const { slug } = req.params
+    const article = await Article.findById(slug)
+    if (!article) {
+      return res.status(404).end()
+    }
+    next()
+  }
+]
+
+exports.getCommentsFromArticle = [
+  validate([validate.isValidObjectId(['params'], 'slug')]),
+  async (req, res, next) => {
+    const { slug } = req.params
+    const article = await Article.findById(slug)
+    if (!article) {
+      return res.status(404).end()
+    }
+    next()
+  }
+]
+
+exports.deleteComment = [
+  validate([
+    validate.isValidObjectId(['params'], 'slug'),
+    validate.isValidObjectId(['params'], 'id')
+  ]),
+  async (req, res, next) => {
+    const { id, slug } = req.params
+    const comment = await Comment.findOne({ _id: id, article: slug })
+    if (!comment) {
+      return res.status(404).end()
+    }
+    if (comment.author.toString() !== req.user._id.toString()) {
+      return res.status(403).end()
+    }
+    req.comment = comment
+    next()
+  }
+]
