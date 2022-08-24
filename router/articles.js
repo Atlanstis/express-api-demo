@@ -61,9 +61,19 @@ router.delete(
 )
 
 // 收藏文章
-router.get('/:slug/favorite', articlesController.favoriteArticle)
+router.post(
+  '/:slug/favorite',
+  auth,
+  articleValidator.favoriteArticle,
+  articlesController.favoriteArticle
+)
 
 // 取消收藏文章
-router.delete('/:slug/favorite', articlesController.unfavoriteArticle)
+router.delete(
+  '/:slug/favorite',
+  auth,
+  articleValidator.unfavoriteArticle,
+  articlesController.unfavoriteArticle
+)
 
 module.exports = router

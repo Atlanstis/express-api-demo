@@ -1,4 +1,4 @@
-const { Article, User, Comment } = require('../model')
+const { Article, User, Comment, ArticleFavor } = require('../model')
 
 const authorPopulate = {
   username: 1,
@@ -136,7 +136,16 @@ exports.deleteComment = async (req, res, next) => {
 
 exports.favoriteArticle = async (req, res, next) => {
   try {
-    res.send('收藏文章')
+    const { article } = req
+    const articleFavor = new ArticleFavor({
+      article: article._id,
+      favor: req.user._id
+    })
+    await articleFavor.save()
+    article.favoritesCount = article.favoritesCount + 1
+    article.populate('author', authorPopulate)
+    await article.save()
+    res.status(200).json({ article })
   } catch (err) {
     next(err)
   }
@@ -144,7 +153,12 @@ exports.favoriteArticle = async (req, res, next) => {
 
 exports.unfavoriteArticle = async (req, res, next) => {
   try {
-    res.send('取消收藏文章')
+    const { articleFavor, article } = req
+    await articleFavor.remove()
+    article.favoritesCount = article.favoritesCount - 1
+    article.populate('author', authorPopulate)
+    await article.save()
+    res.status(200).json({ article })
   } catch (err) {
     next(err)
   }

@@ -1,6 +1,6 @@
 const { body, query } = require('express-validator')
 const validate = require('../middleware/validate')
-const { Article, Comment } = require('../model')
+const { Article, Comment, ArticleFavor } = require('../model')
 
 exports.createArticle = validate([
   body('article.title').notEmpty().withMessage('文章标题不能为空'),
@@ -81,6 +81,36 @@ exports.deleteComment = [
       return res.status(403).end()
     }
     req.comment = comment
+    next()
+  }
+]
+
+exports.favoriteArticle = [
+  validate([validate.isValidObjectId(['params'], 'slug')]),
+  async (req, res, next) => {
+    const { slug } = req.params
+    const article = await Article.findById(slug)
+    if (!article) {
+      return res.status(404).end()
+    }
+    req.article = article
+    next()
+  }
+]
+
+exports.unfavoriteArticle = [
+  ...exports.favoriteArticle,
+  async (req, res, next) => {
+    const { slug } = req.params
+    const { user } = req
+    const articleFavor = await ArticleFavor.findOne({
+      favor: user._id,
+      article: slug
+    })
+    if (!articleFavor) {
+      return res.status(404).end()
+    }
+    req.articleFavor = articleFavor
     next()
   }
 ]

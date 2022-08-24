@@ -3,6 +3,7 @@ const { dbUri, dbUser, dbPass } = require('../config/config.default')
 const userSchema = require('./user')
 const articleSchema = require('./article')
 const commentSchema = require('./comment')
+const articleFavorSchema = require('./article-favor')
 
 // 连接数据库
 mongoose.connect(dbUri, {
@@ -29,5 +30,6 @@ db.once('open', function () {
 module.exports = {
   User: mongoose.model('User', userSchema),
   Article: mongoose.model('Article', articleSchema),
-  Comment: mongoose.model('Comment', commentSchema)
+  Comment: mongoose.model('Comment', commentSchema),
+  ArticleFavor: mongoose.model('ArticleFavor', articleFavorSchema)
 }
